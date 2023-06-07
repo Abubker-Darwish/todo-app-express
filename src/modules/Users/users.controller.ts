@@ -68,10 +68,10 @@ export const getAllUsers = async (req: UserRequest, res: Response) => {
 
   const count = await prisma.user.count({
     where: {
-      OR: {
-        first_name: { contains: search },
-        last_name: { contains: search },
-      },
+      OR: [
+        { first_name: { contains: search } },
+        { last_name: { contains: search } },
+      ],
     },
   });
 
@@ -97,11 +97,13 @@ export const getAllUsers = async (req: UserRequest, res: Response) => {
       updatedAt: true,
     },
   });
+
   const paginate = pagination({
     rpp: +rpp,
     page: +page,
     total: count,
   });
+
   res.status(200).json({
     result: users,
     pagination: paginate,

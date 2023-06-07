@@ -6,7 +6,9 @@ import cors from 'cors';
 // import cookieParser from 'cookie-parser';
 
 import userRoute from '@/modules/Users';
+import taskRoute from '@/modules/Tasks';
 import authenticationRoute from '@/modules/Authentication';
+
 import { errorLogger } from './middleware';
 // ? init app
 const app = express();
@@ -27,6 +29,7 @@ app.get('/api', (_, res) => {
 // * routes
 app.use('/api/v1', authenticationRoute);
 app.use('/api/v1/users', userRoute);
+app.use('/api/v1/tasks', taskRoute);
 
 app.use('*', (_req, res) => {
   return res.status(404).json({ message: 'Not Found Route' });
