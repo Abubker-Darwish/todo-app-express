@@ -5,6 +5,7 @@ import {
 } from '@/services/authorization';
 import prisma from '@/services/prismaClient';
 import { UserRequest } from '@/types';
+import variables from '@/variables';
 import { Request, Response } from 'express';
 import { omit } from 'ramda';
 
@@ -40,6 +41,14 @@ export const login = async (req: Request, res: Response) => {
   const loggedInUser = omit(['password'], user);
 
   const accessToken = await createAccessToken(loggedInUser);
+
+  res.cookie('auth_token', accessToken, {
+    httpOnly: true,
+    secure: variables.env !== 'development',
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 1000 * 24 * 30,
+  });
+
   if (!accessToken) throw Error('Something went wrong');
 
   res.status(200).json({
@@ -48,6 +57,19 @@ export const login = async (req: Request, res: Response) => {
       user: loggedInUser,
       token: accessToken,
     },
+  });
+};
+
+// ? desc: user logout
+// ? route: POST: /api/v1/logout
+// ? @access Public
+export const logout = (req: Request, res: Response) => {
+  res.cookie('auth_token', '', {
+    httpOnly: true,
+    expires: new Date(0),
+  });
+  res.status(200).json({
+    message: 'User Logged out',
   });
 };
 

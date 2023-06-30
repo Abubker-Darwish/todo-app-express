@@ -3,8 +3,9 @@ import variables from './variables';
 import express from 'express';
 import colors from 'colors';
 import cors from 'cors';
-// import cookieParser from 'cookie-parser';
+import cookieParser from 'cookie-parser';
 
+// ? routers
 import userRoute from '@/modules/Users';
 import taskRoute from '@/modules/Tasks';
 import authenticationRoute from '@/modules/Authentication';
@@ -17,8 +18,8 @@ const app = express();
 app.use(cors());
 app.options('*', cors());
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-
 app.use(morgan(':method :url :status'));
 
 // ? root route

@@ -14,15 +14,15 @@ const authorizationMiddleware = async (
   next: NextFunction
 ) => {
   // ? verify auth
-  const { authorization } = req.headers;
-  if (!authorization)
+  // const { authorization } = req.headers;
+  // const token = authorization?.split(' ')[1];
+  const { auth_token } = req.cookies as { auth_token: string };
+  if (!auth_token)
     return res.status(401).json({ message: 'Authorization token required' });
-
-  const token = authorization?.split(' ')[1];
 
   try {
     // ? verify the user token
-    const payload = jwt.verify(token, variables.secret) as IDJwtPayload;
+    const payload = jwt.verify(auth_token, variables.secret) as IDJwtPayload;
     const user = await prisma.user.findUnique({
       where: { id: Number(payload?.id) },
     });
