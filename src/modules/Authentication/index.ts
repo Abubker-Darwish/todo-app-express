@@ -15,7 +15,7 @@ router.route('/logout').post(logout);
 
 router.route('/signup').post(asyncHandler(signup));
 router
-  .route('/current_employee')
+  .route('/current_user')
   .get(authorizationMiddleware, asyncHandler(currentEmployee));
 
 export default router;

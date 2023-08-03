@@ -15,7 +15,13 @@ import { errorLogger } from './middleware';
 const app = express();
 
 // ? app middleware
-app.use(cors());
+const corsPaths = ['http://localhost:3000'];
+app.use(
+  cors({
+    origin: corsPaths,
+    credentials: true,
+  })
+);
 app.options('*', cors());
 app.use(express.json());
 app.use(cookieParser());

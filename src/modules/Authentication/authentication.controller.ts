@@ -52,10 +52,9 @@ export const login = async (req: Request, res: Response) => {
   if (!accessToken) throw Error('Something went wrong');
 
   res.status(200).json({
-    message: 'done',
+    message: 'User Logged successfully',
     data: {
       user: loggedInUser,
-      token: accessToken,
     },
   });
 };
@@ -100,20 +99,27 @@ export const signup = async (req: Request, res: Response) => {
 
   const accessToken = await createAccessToken(loggedInUser);
   if (!accessToken) throw Error('Something went wrong');
+
+  res.cookie('auth_token', accessToken, {
+    httpOnly: true,
+    secure: variables.env !== 'development',
+    sameSite: 'strict',
+    maxAge: 60 * 60 * 1000 * 24 * 30,
+  });
+
   res.status(200).json({
     message: 'User Created successfully',
     data: {
       user: loggedInUser,
-      token: accessToken,
     },
   });
 };
 
 // ? desc: user signup
-// ? route: GET: /api/v1/current_employee
+// ? route: GET: /api/v1/current_user
 // ? @access Private
 export const currentEmployee = (req: UserRequest, res: Response) => {
   res.status(200).json({
-    employee: req.user,
+    user: req.user,
   });
 };
