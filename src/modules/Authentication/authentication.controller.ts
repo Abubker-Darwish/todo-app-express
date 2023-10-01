@@ -8,6 +8,7 @@ import { UserRequest } from '@/types';
 import variables from '@/variables';
 import { Request, Response } from 'express';
 import { omit } from 'ramda';
+import { cloudinaryApp } from '@/services/cloudinary';
 
 type LoginPayload = {
   email?: string;
@@ -16,6 +17,7 @@ type LoginPayload = {
 
 type SignupPayload = {
   email: string;
+  avatar: string;
   password: string;
   username: string;
   first_name: string;
@@ -77,12 +79,23 @@ export const logout = (req: Request, res: Response) => {
 // ? @access Public
 export const signup = async (req: Request, res: Response) => {
   const data = req.body as SignupPayload;
+
   const user = await prisma.user.findUnique({
     where: { email: data.email },
   });
 
   if (user) throw Error('user name already Taken');
 
+  if (data.avatar) {
+    try {
+      const res = await cloudinaryApp.uploader.upload(data.avatar, {
+        folder: 'users',
+      });
+      data.avatar = res.url;
+    } catch (e) {
+      throw Error('please make sure of the format of avatar');
+    }
+  }
   const hashed = await hashPassword(data.password);
   const createdUser = await prisma.user.create({
     data: {
@@ -90,6 +103,7 @@ export const signup = async (req: Request, res: Response) => {
       username: data.username,
       first_name: data.first_name,
       last_name: data.last_name,
+      avatar: data.avatar,
       role: 'basic',
       password: hashed,
     },
