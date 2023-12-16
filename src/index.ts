@@ -16,7 +16,7 @@ import { errorLogger } from './middleware';
 const app = express();
 
 // ? app middleware
-const corsPaths = ['http://localhost:3000'];
+const corsPaths = ['https://localhost:4000', 'http://localhost:3001'];
 app.use(
   cors({
     origin: corsPaths,

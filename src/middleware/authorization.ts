@@ -3,6 +3,7 @@ import variables from '../variables';
 import { NextFunction, Request, Response } from 'express';
 import prisma from '@/services/prismaClient';
 import { user } from '@prisma/client';
+import { omit } from 'ramda';
 
 type UserRequest = Request & {
   user?: user | null;
@@ -13,9 +14,11 @@ const authorizationMiddleware = async (
   res: Response,
   next: NextFunction
 ) => {
-  // ? verify auth
-  // const { authorization } = req.headers;
-  // const token = authorization?.split(' ')[1];
+  // ? verify auth via headers
+  // * const { authorization } = req.headers;
+  // * const token = authorization?.split(' ')[1];
+
+  // ? verify auth via cookies
   const { auth_token } = req.cookies as { auth_token: string };
   if (!auth_token)
     return res.status(401).json({ message: 'Authorization token required' });
@@ -26,7 +29,9 @@ const authorizationMiddleware = async (
     const user = await prisma.user.findUnique({
       where: { id: Number(payload?.id) },
     });
-    req.user = user;
+
+    const rest = omit(['password'], user ?? {});
+    req.user = rest as user;
     next();
   } catch (e) {
     res.status(401).json({ message: 'user is not authorized' });

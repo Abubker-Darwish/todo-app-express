@@ -43,15 +43,14 @@ export const login = async (req: Request, res: Response) => {
   const loggedInUser = omit(['password'], user);
 
   const accessToken = await createAccessToken(loggedInUser);
+  if (!accessToken) throw Error('Something went wrong');
 
   res.cookie('auth_token', accessToken, {
     httpOnly: true,
     secure: variables.env !== 'development',
     sameSite: 'strict',
-    maxAge: 60 * 60 * 1000 * 24 * 30,
+    maxAge: 60 * 60 * 1000 * 24 * 30, // ? 1 month
   });
-
-  if (!accessToken) throw Error('Something went wrong');
 
   res.status(200).json({
     message: 'User Logged successfully',

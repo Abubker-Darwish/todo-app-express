@@ -1,4 +1,5 @@
 import { hashPassword } from '@/services/authorization';
+import { cloudinaryApp } from '@/services/cloudinary';
 import { handleErrMsg, pagination } from '@/services/global';
 import prisma from '@/services/prismaClient';
 import { UserRequest } from '@/types';
@@ -10,6 +11,7 @@ type CreateUserPayload = {
   first_name: string;
   last_name: string;
   username: string;
+  avatar: string;
   password: string;
   role: 'admin' | 'basic';
 };
@@ -41,6 +43,17 @@ export const createUser = async (req: UserRequest, res: Response) => {
     throw Error('Employee already exist');
   }
 
+  if (userPayload.avatar) {
+    try {
+      const res = await cloudinaryApp.uploader.upload(userPayload.avatar, {
+        folder: 'users',
+      });
+      userPayload.avatar = res.url;
+    } catch (e) {
+      throw Error('please make sure of the format of avatar');
+    }
+  }
+
   const user = await prisma.user.create({
     data: {
       email: userPayload.email,
@@ -48,6 +61,7 @@ export const createUser = async (req: UserRequest, res: Response) => {
       last_name: userPayload.last_name,
       username: userPayload.username,
       password: hashed,
+      avatar: userPayload.avatar || null,
       role: userPayload.role,
     },
   });
@@ -94,6 +108,7 @@ export const getAllUsers = async (req: UserRequest, res: Response) => {
       last_name: true,
       username: true,
       role: true,
+      avatar: true,
       updatedAt: true,
     },
   });
@@ -158,9 +173,7 @@ export const deleteUser = async (req: UserRequest, res: Response) => {
 
   try {
     const user = await prisma.user.delete({
-      where: {
-        id: Number(id),
-      },
+      where: { id: +id },
     });
     if (!user) throw new Error('User not found');
     const result = omit(['password'], user);
